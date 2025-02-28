@@ -8,13 +8,16 @@ import cookieParser from "cookie-parser";
 import cors from "cors"
 import { FRONTEND_URL } from "./const.js";
 
+import projectRoutes from "./routes/project.routes.js"
 connect();
 
 const app = express();
-app.use(cors({
-    origin: FRONTEND_URL, // Your frontend URL
-    credentials: true, // Allow cookies and authentication headers
-  }));
+console.log(FRONTEND_URL);
+// app.use(cors({
+//     origin: FRONTEND_URL, // Your frontend URL
+//     credentials: true, // Allow cookies and authentication headers
+//   }));
+app.use(cors("*"))
 app.use(morgan("dev"));
 
 app.use(express.json());
@@ -22,6 +25,7 @@ app.use(express.urlencoded({extended: true}));
 app.use(cookieParser());
 
 app.use("/users", userRoutes);
+app.use("/projects", projectRoutes);
 app.get("/", (req, res) => {
     res.send('hello world');
 })
