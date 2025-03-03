@@ -1,3 +1,37 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@keyframes water-flow {
+    0% {
+        background-position: 0% 0%;
+    }
+    100% {
+        background-position: 100% 100%;
+    }
+}
+
+.bg-water-flow {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6));
+    background-size: 400% 400%;
+    animation: water-flow 8s ease infinite;
+    position: relative;
+    overflow: hidden;
+}
+
+.bg-water-flow::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.1);
+    opacity: 0.3; /* Adjust opacity for a more subtle effect */
+    pointer-events: none;
+    animation: water-flow 8s ease infinite;
+    filter: blur(2px); /* Add blur for a smoother floating effect */
+}
+
+
+

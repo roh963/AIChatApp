@@ -78,9 +78,7 @@ export const getProjectById = async ({ projectId }) =>{
     if (!mongoose.Types.ObjectId.isValid(projectId)) {
         throw new Error("Invalid projectId")
     }
-    const project = await projectModel.find({ _id: projectId}).populate('users');
-    if (!project) {
-        throw new Error("Project not found");
-    }
+    const project = await projectModel.findOne({ _id: projectId}).populate('users');
+
     return project;
 }
