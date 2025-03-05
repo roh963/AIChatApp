@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+
+/* left side messages*/
+.message-box{
+  scroll-behavior: smooth;
+}
+.message-box::-webkit-scrollbar{
+  display: none;
+}
 @keyframes water-flow {
     0% {
         background-position: 0% 0%;
@@ -32,6 +40,44 @@
     animation: water-flow 8s ease infinite;
     filter: blur(2px); /* Add blur for a smoother floating effect */
 }
+
+/* slider */
+@keyframes twinkle {
+    0%, 100% {
+      opacity: 0.3;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+  
+  .stars {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle, #A7C7E7 0%, #EEF5FF 100%);
+    overflow: hidden;
+    z-index: -1;
+  }
+  
+  .stars::before {
+    content: "";
+    position: absolute;
+    width: 300%;
+    height: 300%;
+    background: url("https://www.transparenttextures.com/patterns/stardust.png");
+    opacity: 0.5;
+    animation: twinkle 8s infinite alternate;
+  }
+  
+  
+  
+  
+
+
+
+  
+  
+
 
 
 

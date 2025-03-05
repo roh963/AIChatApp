@@ -3,15 +3,16 @@ import Register from '../screen/Register';
 import Login from '../screen/Login';
 import Home from '../screen/Home';
 import Project from "../screen/Project";
+import UserAuth from "../auth/UserAuth";
 
 const AppRoute = () => {
     return (
         <BrowserRouter>
             <Routes>
-                <Route exact path="/" element={<div><Home /></div>} />
+                <Route exact path="/" element={<UserAuth> <Home /></UserAuth> } />
                 <Route path="/login" element={<div><Login /></div>} />
                 <Route path="/register" element={<div><Register /></div>} />
-                <Route path="/project" element={<div><Project /></div>} />
+                <Route path="/project" element={<UserAuth> <Project /></UserAuth>} />
             </Routes>
         </BrowserRouter>
     );

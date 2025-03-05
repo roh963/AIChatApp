@@ -12,12 +12,12 @@ import projectRoutes from "./routes/project.routes.js"
 connect();
 
 const app = express();
-console.log(FRONTEND_URL);
+
 // app.use(cors({
 //     origin: FRONTEND_URL, // Your frontend URL
 //     credentials: true, // Allow cookies and authentication headers
 //   }));
-app.use(cors("*"))
+app.use(cors())
 app.use(morgan("dev"));
 
 app.use(express.json());
