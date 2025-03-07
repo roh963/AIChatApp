@@ -9,16 +9,17 @@ import hljs from 'highlight.js';
 import PropTypes from 'prop-types';
 import Markdown from 'markdown-to-jsx';
 import RightSide from '../component/RightSide';
+import { getWebContainer } from '../config/webContainer';
 
 
-function SyntaxHighlightedCode(props){
+function SyntaxHighlightedCode(props) {
   const ref = useRef(null);
   useEffect(() => {
     if (ref.current && props.className?.includes('lang-') && window.hljs) {
-      window.hljs.highlightElement(ref.current)  
-      ref.current.removeAttribute('data-highlighted') 
+      window.hljs.highlightElement(ref.current)
+      ref.current.removeAttribute('data-highlighted')
     }
-  }, [props.className,props.children])
+  }, [props.className, props.children])
   return <code {...props} ref={ref} />
 }
 
@@ -40,7 +41,10 @@ const Project = () => {
   const [fileTree, setFileTree] = useState({})
   const [currentFile, setCurrentFile] = useState(null)
   const [openFiles, setOpenFiles] = useState([])
-  
+  const [webContainer, setWebContainer] = useState(null)
+  const [iframeUrl, setIframeUrl] = useState(null)
+  const [runProcess, setRunProcess] = useState(null)
+
   const handleUserClick = (id) => {
     setSelectedUserId(prevSelectedUserId => {
       const newSelectedUserId = new Set(prevSelectedUserId);
@@ -71,7 +75,7 @@ const Project = () => {
       message,
       sender: user
     })
-    setMessages(prevMessages => [ ...prevMessages, { sender: user, message } ])
+    setMessages(prevMessages => [...prevMessages, { sender: user, message }])
     // appendOutgoingMessage(message)
     setMessage('');
   }
@@ -80,19 +84,44 @@ const Project = () => {
 
   useEffect(() => {
     initializeSocket(project._id);
-    receiveMessage('project-message', (data) => {
-      const message = JSON.parse(data.message)
-      console.log("message ",message);
-      
-      if (message.fileTree) {
-         setFileTree(message.fileTree)
+    console.log("project ", project._id)
+    if (!webContainer) {
+      getWebContainer().then((container) => {
+        setWebContainer(container);
+        console.log("container started")
+      });
+    }
+    const messageHandler = data => {
+      console.log(data);
+      if (data.sender._id == 'ai') {
+        const message = JSON.parse(data.message);
+        console.log("Message: ", message);
+
+
+        // Mount fileTree if webContainer is available
+        webContainer?.mount(message.fileTree)
+
+        // Update fileTree state
+        if (message.fileTree) {
+          setFileTree(message.fileTree);
+        }
+
+        // Update messages state
+        setMessages(prevMessages => [...prevMessages, data]);
+      } else {
+        setMessages(prevMessages => [...prevMessages, data])
       }
-      setMessages(prevMessage => [...prevMessage, data]);
-      // appendIncomingMessage(data);
-    })
+    };
+    receiveMessage('project-message', messageHandler);
+
     axiosInstance.get(`/projects/get-project/${location.state.project._id}`).then(res => {
       console.log(res.data);
-      setProject(res.data.project);
+      if (res.data.project) {
+        setProject(res.data.project);
+        setFileTree(res.data.project.fileTree || {});
+      } else {
+        console.error("Project data is not defined");
+      }
     }).catch(err => {
       console.error(err);
     });
@@ -102,30 +131,43 @@ const Project = () => {
     }).catch(err => {
       console.error(err);
     });
-  },[]);
 
+    return () => {
+    };
+
+  }, []);
+  function saveFileTree(ft) {
+    axiosInstance.put('/projects/update-file-tree', {
+      projectId: project._id,
+      fileTree: ft
+    }).then(res => {
+      console.log(res.data)
+    }).catch(err => {
+      console.log(err)
+    })
+  }
 
   //  function scrollToBottom(){
   //   messageBox.current.scrollTop = messageBox.current.scrollHeight
   // }
-  
-function WriteAiMessage(message){
-  const messageObject = JSON.parse(message);
-  return (
-    <>
-    <div className="overflow-auto bg-slate-950 text-white rounded-sm p-2">
-      <Markdown children={messageObject.text}
-                options={{
-                            overrides: {
-                            code: SyntaxHighlightedCode
-                          },
-                        }}
-        />
-    </div>
-    </>
-  )
 
-}
+  function WriteAiMessage(message) {
+    const messageObject = JSON.parse(message);
+    return (
+      <>
+        <div className="overflow-auto bg-slate-950 text-white rounded-sm p-2">
+          <Markdown children={messageObject.text}
+            options={{
+              overrides: {
+                code: SyntaxHighlightedCode
+              },
+            }}
+          />
+        </div>
+      </>
+    )
+
+  }
   return (
     <main className="h-screen w-screen flex">
       <LeftSide
@@ -148,6 +190,12 @@ function WriteAiMessage(message){
         setCurrentFile={setCurrentFile}
         openFiles={openFiles}
         setOpenFiles={setOpenFiles}
+        webContainer={webContainer}
+        iframeUrl={iframeUrl}
+        setIframeUrl={setIframeUrl}
+        runProcess={runProcess}
+        setRunProcess={setRunProcess}
+        saveFileTree={saveFileTree}
       />
       {isModalOpen && (
         <ModalProject
@@ -156,6 +204,7 @@ function WriteAiMessage(message){
           addCollaborator={addCollaborator}
           handleUserClick={handleUserClick}
           setIsModalOpen={setIsModalOpen}
+
         />
       )}
 

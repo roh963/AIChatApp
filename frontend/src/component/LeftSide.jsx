@@ -24,7 +24,7 @@ const LeftSide = ({ setIsModalOpen, setIsSidePanelOpen, isSidePanelOpen, project
                 <div ref={messageBox} className="message-box p-3 flex-grow flex flex-col gap-2 overflow-auto max-h-full scrollbar-hide bg-opacity-70 backdrop-blur-md">
                     {
                         messages.map((msg, index) => (
-                            <div key={index} className={`${msg.sender._id === 'ai' ? 'max-w-80' : 'ml-auto max-w-54'} ${msg.sender._id == user.id.toString() && 'ml-auto'}   message flex flex-col p-2 bg-slate-50 w-fit rounded-md`}>
+                            <div key={index} className={`${msg.sender._id === 'ai' ? 'max-w-80' : 'ml-auto max-w-52'} ${msg.sender._id == user.id.toString() && 'ml-auto'}   message flex flex-col p-2 bg-slate-50 w-fit rounded-md`}>
                                 <small className='opacity-65 text-xs'>{msg.sender.email}</small>
                                 <div className="text-sm">
                                     {

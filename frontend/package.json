@@ -10,9 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@webcontainer/api": "^1.5.1-internal.4",
     "axios": "^1.7.9",
     "framer-motion": "^12.4.7",
-    "highlight.js": "^11.11.0",
+    "highlight.js": "^11.11.1",
     "markdown-to-jsx": "^7.7.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

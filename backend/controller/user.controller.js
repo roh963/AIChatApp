@@ -3,6 +3,7 @@ import userModel from "../model/user.model.js"
 import * as userService from "../services/user.services.js"
 import {validationResult} from "express-validator"
 import redisClient from "../services/redis.services.js";
+import jwt from  "jsonwebtoken"
 
 
 export const createUserController = async(req,res)=>{
@@ -14,7 +15,7 @@ export const createUserController = async(req,res)=>{
         const user = await userService.createUser(req.body);
         const token = await user.generateJWT();
         delete user._doc.password
-        res.status(201).json(user);
+        res.status(201).json(user,token);
      } catch (error) {
         res.status(400).json({error: error.message});
      }
@@ -59,18 +60,33 @@ export const profileController = async (req,res)=>{
         user: req.user
     });
 }
+
+import jwt from 'jsonwebtoken';
+
 export const logoutController = async (req, res) => {
     try {
-        const token = req.cookie.token || req.headers.authorization.split(' ')[ 1 ];
-        redisClient.set(token,'logout','EX',60*60*24);
-        res.status(200).json({
-            message: 'Logged out successfully'
+        const token = req.cookies.token || req.headers.authorization.split(' ')[1];
+        
+        if (!token) {
+            return res.status(401).json({ errors: "Invalid Credentials" });
+        }
+
+        // Token ko verify karein
+        jwt.verify(token, JWT_SECRET, (err) => {
+            if (err) {
+                return res.status(401).json({ errors: "Invalid Credentials" });
+            }
         });
+
+        redisClient.set(token, 'logout', 'EX', 60 * 60 * 24);
+        res.status(200).json({ message: 'Logged out successfully' });
     } catch (error) {
-        console.log(err);
-        res.status(400).send(err.message);
+        console.error(error);
+        res.status(400).send(error.message);
     }
-}
+};
+
+
 
 export const getAllUsersController = async(req, res) => {
     try {
