@@ -1,6 +1,6 @@
 import http from "http"
 import app from "./app.js"
-import { JWT_SECRET, PORT } from "./const.js"
+import { FRONTEND_URL, JWT_SECRET, PORT } from "./const.js"
 import jwt from "jsonwebtoken"
 import { Server } from "socket.io"
 import mongoose from "mongoose"
@@ -11,9 +11,10 @@ import { generateResult } from "./services/ai.services.js"
 const port = PORT || 3000
 
 const server = http.createServer(app)
-const io = new Server(server,{
+const io = new Server(server, {
   cors: {
-    origin: '*',
+    origin: FRONTEND_URL, // Replace with your frontend domain
+    methods: ["GET", "POST"]
   }
 });
 
@@ -47,6 +48,7 @@ io.on('connection', (socket) => {
   socket.on(`project-message`,async(data)=> {
     const message = data.message;
     const aiIsPresentInMessage = message.includes('@ai');
+    socket.broadcast.to(socket.roomId).emit(`project-message`,data);
     if(aiIsPresentInMessage) {
       const promt = message.replace('@ai', '');
       const result = await generateResult(promt);
@@ -61,7 +63,6 @@ io.on('connection', (socket) => {
         return;
     }
     
-    socket.broadcast.to(socket.roomId).emit(`project-message`,{});
   });
  
   socket.on(`disconnect`,()=> { 

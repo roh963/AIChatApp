@@ -1,13 +1,13 @@
 // import React from 'react';
 import PropTypes from 'prop-types';
-import Markdown from 'markdown-to-jsx'
-
-const LeftSide = ({ setIsModalOpen, setIsSidePanelOpen, isSidePanelOpen, project, message, messages, setMessage, send, messageBox }) => {
+import hljs from 'highlight.js';
+const LeftSide = ({ setIsModalOpen, setIsSidePanelOpen, isSidePanelOpen, project, message, messages,user, setMessage, send, messageBox, WriteAiMessage }) => {
     console.log(project.users);
+   
     return (
 
         <section className="left relative flex flex-col h-screen min-w-96 bg-slate-300">
-            <header className='flex justify-between items-center p-4 w-full bg-white shadow-md border-b-2 border-gray-300 font-bold text-lg'>
+            <header className='flex justify-between items-center p-4 w-full bg-white shadow-md border-b-2 border-gray-300 font-bold text-lg z-10'>
                 <button
                     className='flex gap-2 items-center px-4 py-2 bg-slate-600 text-white rounded-lg shadow-md transition-transform transform hover:scale-105'
                     onClick={() => setIsModalOpen(true)}>
@@ -24,17 +24,14 @@ const LeftSide = ({ setIsModalOpen, setIsSidePanelOpen, isSidePanelOpen, project
                 <div ref={messageBox} className="message-box p-3 flex-grow flex flex-col gap-2 overflow-auto max-h-full scrollbar-hide bg-opacity-70 backdrop-blur-md">
                     {
                         messages.map((msg, index) => (
-                            <div key={index} className={`${msg.sender._id === 'ai' ? 'max-w-80' : 'ml-auto max-w-54'}  message flex flex-col p-2 bg-slate-50 w-fit rounded-md`}>
+                            <div key={index} className={`${msg.sender._id === 'ai' ? 'max-w-80' : 'ml-auto max-w-54'} ${msg.sender._id == user.id.toString() && 'ml-auto'}   message flex flex-col p-2 bg-slate-50 w-fit rounded-md`}>
                                 <small className='opacity-65 text-xs'>{msg.sender.email}</small>
-                                <p className="text-sm">
+                                <div className="text-sm">
                                     {
                                         msg.sender._id === 'ai' ?
-                                            <div className='overflow-auto bg-slate-950 text-white rounded-sm p-2'>
-                                                <Markdown>{msg.message}</Markdown>
-                                            </div> : msg.message
-
+                                        WriteAiMessage(msg.message)  :<p>{msg.message}</p>
                                     }
-                                </p>
+                                </div>
                             </div>
                         ))
                     }
@@ -98,10 +95,18 @@ LeftSide.propTypes = {
     setIsSidePanelOpen: PropTypes.func.isRequired,
     isSidePanelOpen: PropTypes.bool.isRequired,
     message: PropTypes.string.isRequired,
-    messages: PropTypes.string.isRequired,
-    messageBox: PropTypes.string.isRequired,
+    messages: PropTypes.arrayOf(PropTypes.shape({
+        sender: PropTypes.shape({
+            _id: PropTypes.string.isRequired,
+            email: PropTypes.string.isRequired
+        }).isRequired,
+        message: PropTypes.string.isRequired
+    })).isRequired,
+    messageBox: PropTypes.object.isRequired,
+    user: PropTypes.object.isRequired,
     setMessage: PropTypes.func.isRequired,
     send: PropTypes.func.isRequired,
+    WriteAiMessage: PropTypes.func.isRequired,
 };
 
 
