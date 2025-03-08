@@ -1,9 +1,7 @@
-import { request } from "express";
 import userModel from "../model/user.model.js"
 import * as userService from "../services/user.services.js"
 import {validationResult} from "express-validator"
 import redisClient from "../services/redis.services.js";
-import jwt from  "jsonwebtoken"
 
 
 export const createUserController = async(req,res)=>{
@@ -61,31 +59,28 @@ export const profileController = async (req,res)=>{
     });
 }
 
-import jwt from 'jsonwebtoken';
-
 export const logoutController = async (req, res) => {
     try {
+        // Token ko cookies ya headers se le lo
         const token = req.cookies.token || req.headers.authorization.split(' ')[1];
         
+        // Check karein ki token valid hai ya nahi
         if (!token) {
-            return res.status(401).json({ errors: "Invalid Credentials" });
+            return res.status(401).json({ errors: "Invalid Credentials" }); // Agar token nahi hai
         }
 
-        // Token ko verify karein
-        jwt.verify(token, JWT_SECRET, (err) => {
-            if (err) {
-                return res.status(401).json({ errors: "Invalid Credentials" });
-            }
-        });
-
+        // Token ko Redis mein logout state mein set kar do
         redisClient.set(token, 'logout', 'EX', 60 * 60 * 24);
-        res.status(200).json({ message: 'Logged out successfully' });
+        
+        // Success response bheje
+        res.status(200).json({
+            message: 'Logged out successfully',
+        });
     } catch (error) {
-        console.error(error);
-        res.status(400).send(error.message);
+        console.error(error); // Error ko log kare
+        res.status(400).send(error.message); // Error response bheje
     }
 };
-
 
 
 export const getAllUsersController = async(req, res) => {
