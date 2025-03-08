@@ -1,10 +1,7 @@
 // import React from 'react';
 import PropTypes from 'prop-types';
-import hljs from 'highlight.js';
 const LeftSide = ({ setIsModalOpen, setIsSidePanelOpen, isSidePanelOpen, project, message, messages,user, setMessage, send, messageBox, WriteAiMessage }) => {
-    console.log(project.users);
-   
-    return (
+     return (
 
         <section className="left relative flex flex-col h-screen min-w-96 bg-slate-300">
             <header className='flex justify-between items-center p-4 w-full bg-white shadow-md border-b-2 border-gray-300 font-bold text-lg z-10'>

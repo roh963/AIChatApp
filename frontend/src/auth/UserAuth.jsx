@@ -8,8 +8,6 @@ const UserAuth =({children})=>{
     const  [loading , setLoading ]= useState(true);
     const token = localStorage.getItem('token');
     const navigate = useNavigate();
-     console.log(user);
-     console.log(token);
     useEffect(() => {
         if(user){
            setLoading(false);

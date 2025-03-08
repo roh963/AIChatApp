@@ -14,7 +14,6 @@ import { UserContext } from '../context/user.context';
     console.log('Registering User: ', { email, password });
     axiosInstance.post('/users/register', { email, password})
                .then((res)=>{ 
-                console.log(res.data)
                 localStorage.setItem('token', res.data.token)
                 setUser(res.data.user)
                  navigate('/login'); // Redirect to login page on successful registration})

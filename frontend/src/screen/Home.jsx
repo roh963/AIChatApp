@@ -23,7 +23,6 @@ function Home() {
   }
   useEffect(() => {
     axiosInstance.get('/projects/all').then((response) => {
-      console.log(response.data);
       setProject(response.data.projects);
     }).catch((error) => {
       console.error(error);
