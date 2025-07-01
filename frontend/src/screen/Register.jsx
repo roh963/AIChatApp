@@ -13,9 +13,9 @@ import { UserContext } from '../context/user.context';
     // Add your API call to register user here
     console.log('Registering User: ', { email, password });
     axiosInstance.post('/users/register', { email, password})
-               .then((res)=>{ 
-                localStorage.setItem('token', res.data.token)
-                setUser(res.data.user)
+               .then(async(res)=>{ 
+               await localStorage.setItem('token', res.data.token)
+                await setUser(res.data.user)
                  navigate('/login'); // Redirect to login page on successful registration})
                })
                .catch((err)=>{

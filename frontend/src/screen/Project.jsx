@@ -61,8 +61,7 @@ const Project = () => {
     axiosInstance.put("/projects/add-user", {
       projectId: location.state.project._id,
       users: Array.from(selectedUserId)
-    }).then(res => {
-      console.log(res.data);
+    }).then(() => {
       setIsModalOpen(false);
     }).catch(err => {
       console.log(err);

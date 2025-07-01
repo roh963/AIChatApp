@@ -4,7 +4,6 @@ import { axiosInstance } from "../config/axios"
 import { useNavigate } from 'react-router-dom';
 function Home() {
   const { user } = useContext(UserContext)
-  console.log(user);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [projectName, setProjectName] = useState(null);
   const [project, setProject] = useState([]);
@@ -14,7 +13,6 @@ function Home() {
     console.log({ projectName })
     axiosInstance.post('/projects/create', { name: projectName })
       .then((res) => {
-        console.log(res)
         setIsModalOpen(false)
       })
       .catch((err) => {
