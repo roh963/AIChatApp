@@ -1,176 +1,127 @@
-import { useContext, useEffect, useState } from "react"
-import { UserContext } from "../context/user.context"
-import { axiosInstance } from "../config/axios"
+import { useContext, useEffect, useState } from "react";
+import { UserContext } from "../context/user.context";
+import { axiosInstance } from "../config/axios";
 import { useNavigate } from 'react-router-dom';
+
 function Home() {
-  const { user } = useContext(UserContext)
+  const { user, setUser } = useContext(UserContext);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [projectName, setProjectName] = useState(null);
+  const [projectName, setProjectName] = useState('');
   const [project, setProject] = useState([]);
   const navigate = useNavigate();
+
+  // 🔴 Logout handler
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setUser(null);
+    navigate('/login');
+  };
+
   function createProject(e) {
     e.preventDefault();
-    console.log({ projectName })
     axiosInstance.post('/projects/create', { name: projectName })
       .then((res) => {
-        setIsModalOpen(false)
+        setIsModalOpen(false);
+        setProjectName('');
+        // Reload project list
+        axiosInstance.get('/projects/all').then((response) => {
+          setProject(response.data.projects);
+        });
       })
-      .catch((err) => {
-        console.error(err)
-      })
+      .catch((err) => console.error(err));
   }
+
   useEffect(() => {
-    axiosInstance.get('/projects/all').then((response) => {
-      setProject(response.data.projects);
-    }).catch((error) => {
-      console.error(error);
-    });
+    axiosInstance.get('/projects/all')
+      .then((response) => setProject(response.data.projects))
+      .catch((error) => console.error(error));
   }, []);
 
   return (
-    <main
-      className="p-4 min-h-screen bg-black relative flex flex-col items-center justify-center"
-      style={{ backgroundImage: "url('/real-night-sky.jpg')", backgroundSize: "cover", backgroundPosition: "center" }}
-    >
-      {/* Stars Effect */}
-      <div className="absolute inset-0 z-0 overflow-hidden">
-        {Array.from({ length: 100 }).map((_, index) => (
-          <div
-            key={index}
-            className="absolute w-[2px] h-[2px] bg-white rounded-full opacity-80 animate-[twinkle_5s_infinite] shadow-lg"
-            style={{
-              top: `${Math.random() * 100}vh`,
-              left: `${Math.random() * 100}vw`,
-              animationDuration: `${3 + Math.random() * 5}s`,
-              animationDelay: `${Math.random() * 3}s`,
-              transform: `scale(${0.5 + Math.random() * 1.5})`,
-            }}
-          />
-        ))}
-      </div>
+    <main className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-950 to-black p-6 relative text-white">
 
-      {!isModalOpen && (
-        <div className="projects flex flex-wrap gap-3 relative z-10">
+      {/* 🔝 Top Navbar with Logout */}
+      <div className="flex justify-between items-center mb-10">
+        <h1 className="text-3xl font-bold text-white tracking-wide">My Projects</h1>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 transition text-white font-medium"
+          >
+            <i className="ri-logout-box-r-line mr-1"></i> Logout
+          </button>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="project p-4 border border-slate-500 text-white bg-gray-900/50 rounded-md shadow-lg hover:bg-gray-700/70 transition-all"
+            className="px-5 py-3 bg-indigo-600 hover:bg-indigo-700 transition rounded-xl shadow-lg text-white font-semibold text-base flex items-center gap-2"
           >
-            New Project <i className="ri-link ml-2"></i>
+            <i className="ri-add-circle-line text-xl"></i> Create New Project
           </button>
         </div>
-      )}
+      </div>
 
-      {/* Project List */}
-      {!isModalOpen && (
-        <div className="relative z-10 flex flex-wrap gap-4 p-4">
-          {project.map((project) => (
-            <div key={project._id}
-              onClick={() => navigate(`/project`, { state: { project } })}
-              className="project flex flex-col gap-2 cursor-pointer p-4 border border-slate-600 rounded-md min-w-52 bg-gray-800/50 text-white shadow-lg hover:bg-gray-700/70 transition"
+      {/* Project Cards */}
+      <section className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {project.length === 0 ? (
+          <div className="text-gray-400 text-center col-span-full">No projects created yet.</div>
+        ) : (
+          project.map((proj, idx) => (
+            <div
+              key={proj._id}
+              onClick={() => navigate('/project', { state: { project: proj } })}
+              className="bg-gradient-to-br from-gray-800 via-gray-850 to-gray-900 border border-indigo-500/30 rounded-xl p-5 cursor-pointer transition hover:scale-105 shadow-xl group relative"
             >
-              <h2 className='font-semibold text-blue-300'>{project.name}</h2>
-              <div className="flex gap-2 text-sm text-gray-300">
-                <p><i className="ri-user-line"></i> Collaborators:</p>
-                {project.users.length}
+              <div className="absolute top-2 right-2 text-indigo-400 text-sm font-mono opacity-70">{idx + 1}</div>
+              <h2 className="text-xl font-bold text-indigo-300 mb-2">{proj.name}</h2>
+              <div className="flex items-center text-sm text-gray-300 gap-2">
+                <i className="ri-user-3-line text-indigo-400"></i>
+                {proj.users.length} Collaborator{proj.users.length !== 1 && 's'}
               </div>
             </div>
-          ))}
+          ))
+        )}
+      </section>
+
+      {/* Create Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="bg-gradient-to-br from-gray-800 via-gray-900 to-black p-8 rounded-2xl shadow-2xl border border-indigo-500 max-w-md w-full relative">
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="absolute top-3 right-3 text-gray-400 hover:text-red-500 text-xl"
+            >
+              <i className="ri-close-fill"></i>
+            </button>
+            <h2 className="text-2xl font-semibold mb-6 text-indigo-400 text-center">Create New Project</h2>
+            <form onSubmit={createProject} className="flex flex-col gap-4">
+              <input
+                value={projectName}
+                onChange={(e) => setProjectName(e.target.value)}
+                type="text"
+                placeholder="Enter project name"
+                className="w-full px-4 py-3 rounded-lg bg-gray-700 text-white border border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                required
+              />
+              <div className="flex justify-end gap-3 mt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 rounded-lg bg-gray-500 hover:bg-gray-600 text-white transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition"
+                >
+                  Create
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
-
-
-
-      {/* Modal */}
-      {
-        isModalOpen && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-90 overflow-hidden">
-            {/* Moving Stars Background */}
-            <div className="absolute inset-0 z-0 overflow-hidden">
-              <div className="absolute w-full h-full bg-black">
-                {/* Multiple animated stars */}
-                {Array.from({ length: 50 }).map((_, index) => (
-                  <div
-                    key={index}
-                    className="absolute w-[3px] h-[3px] bg-white rounded-full opacity-80 animate-[twinkle_5s_infinite] shadow-lg"
-                    style={{
-                      top: `${Math.random() * 100}vh`,
-                      left: `${Math.random() * 100}vw`,
-                      animationDuration: `${3 + Math.random() * 5}s`,
-                      animationDelay: `${Math.random() * 3}s`,
-                      transform: `scale(${0.5 + Math.random() * 1.5})`,
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Modal */}
-            <div className="relative z-10 bg-white/10 backdrop-blur-xl p-8 rounded-3xl shadow-xl w-1/3 border border-gray-300/20 text-white">
-              {/* Subtle Glowing Border */}
-              <div className="absolute inset-0 rounded-3xl border-[2px] border-transparent bg-gradient-to-r from-blue-500 to-purple-500 opacity-20 blur-lg"></div>
-
-              <h2 className="text-2xl font-bold mb-5 text-center tracking-wide text-blue-300">
-                🚀 Create New Project
-              </h2>
-              <form onSubmit={createProject}>
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-200">
-                    Project Name
-                  </label>
-                  <input
-                    onChange={(e) => setProjectName(e.target.value)}
-                    value={projectName}
-                    type="text"
-                    className="mt-2 block w-full p-3 border-none rounded-lg bg-white/10 backdrop-blur-md shadow-md focus:ring-2 focus:ring-blue-400 focus:outline-none text-white"
-                    required
-                  />
-                </div>
-                <div className="flex justify-end space-x-4">
-                  <button
-                    type="button"
-                    className="px-5 py-2 bg-gray-400/30 rounded-lg shadow-md backdrop-blur-md hover:bg-gray-500/50 transition transform hover:scale-105"
-                    onClick={() => setIsModalOpen(false)}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-lg shadow-lg transform hover:scale-110 transition-all duration-200"
-                  >
-                    Create
-                  </button>
-                </div>
-              </form>
-            </div>
-
-            {/* Keyframe animation for stars */}
-            <style>
-              {`
-          @keyframes twinkle {
-            0%, 100% { opacity: 0.6; transform: scale(0.8); }
-            50% { opacity: 1; transform: scale(1.2); }
-          }
-        `}
-            </style>
-          </div>
-        )
-      }
-
-      {/* Keyframe animation for stars */}
-      <style>
-        {`
-      @keyframes twinkle {
-        0%, 100% { opacity: 0.6; transform: scale(0.8); }
-        50% { opacity: 1; transform: scale(1.2); }
-      }
-    `}
-      </style>
     </main>
-
-
-
-
-  )
+  );
 }
 
-export default Home
+export default Home;
