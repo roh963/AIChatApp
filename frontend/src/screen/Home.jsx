@@ -17,6 +17,22 @@ function Home() {
     navigate('/login');
   };
 
+  // Debug function to test authentication
+  const testAuth = () => {
+    const token = localStorage.getItem('token');
+    console.log('Current token:', token);
+    console.log('User context:', user);
+    
+    // Test the API call
+    axiosInstance.get('/projects/all')
+      .then(response => {
+        console.log('Auth test successful:', response.data);
+      })
+      .catch(error => {
+        console.error('Auth test failed:', error.response?.data || error.message);
+      });
+  };
+
   function createProject(e) {
     e.preventDefault();
     axiosInstance.post('/projects/create', { name: projectName })
@@ -49,6 +65,12 @@ function Home() {
             className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 transition text-white font-medium"
           >
             <i className="ri-logout-box-r-line mr-1"></i> Logout
+          </button>
+          <button
+            onClick={testAuth}
+            className="px-4 py-2 rounded-xl bg-yellow-600 hover:bg-yellow-700 transition text-white font-medium"
+          >
+            <i className="ri-bug-line mr-1"></i> Test Auth
           </button>
           <button
             onClick={() => setIsModalOpen(true)}
